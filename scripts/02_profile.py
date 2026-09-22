@@ -31,7 +31,55 @@ for t in tables:
 # Write the SQL yourself. Examples of what to test are in the comments.
 # ---------------------------------------------------------------------------
 CHECKS = {
-    # "orders: duplicate order_id": "SELECT COUNT(*) - COUNT(DISTINCT order_id) FROM raw.orders",
+    "1 orders: duplicate order_id": "SELECT COUNT(*) - COUNT(DISTINCT order_id) FROM raw.orders",
+    "2 customers: distinct customer_id vs distinct customer_unique_id" : "SELECT COUNT(distinct customer_id) - COUNT(distinct customer_unique_id) FROM raw.customers",
+    "3 customers: people with more than one order": 
+        """
+        SELECT COUNT(*) FROM (
+            SELECT c.customer_unique_id
+            FROM raw.orders o
+            JOIN raw.customers c ON c.customer_id = o.customer_id
+            GROUP BY c.customer_unique_id
+            HAVING COUNT(*) > 1
+        )""",
+    "4 order_items: orphan rows (order not in orders)": """
+        SELECT COUNT(*) FROM raw.order_items oi
+        WHERE NOT EXISTS (SELECT 1 FROM raw.orders o WHERE o.order_id = oi.order_id)
+    """,
+    "5 reviews: duplicate review_id" : "SELECT COUNT(*) - COUNT(DISTINCT review_id) FROM raw.order_reviews",
+    "6 orders with more than one review": """
+        SELECT COUNT(*) FROM (
+            SELECT order_id FROM raw.order_reviews
+            GROUP BY order_id
+            HAVING COUNT(review_id) > 1
+        )
+    """,
+    "7 delivered orders with no delivery date": """
+        SELECT COUNT(*) FROM raw.orders
+        WHERE order_status = 'delivered' AND order_delivered_customer_date IS NULL
+    """,
+    "8 delivered before purchased": """
+        SELECT COUNT(*) FROM raw.orders
+        WHERE order_delivered_customer_date < order_purchase_timestamp
+    """,
+    "9 products whose category has no English name": """
+        SELECT COUNT(DISTINCT p.product_category_name) FROM raw.products p
+        WHERE p.product_category_name IS NOT NULL
+          AND NOT EXISTS (SELECT 1 FROM raw.category_translation t
+                          WHERE t.product_category_name = p.product_category_name)
+    """,
+    "10 orders where payments differ from items + freight by more than 1" : """
+        WITH items AS (
+            SELECT order_id, SUM(price + freight_value) AS item_total
+            FROM raw.order_items GROUP BY order_id
+        ),
+        pays AS (
+            SELECT order_id, SUM(payment_value) AS pay_total
+            FROM raw.order_payments GROUP BY order_id
+        )
+        SELECT COUNT(*) FROM items i JOIN pays p ON p.order_id = i.order_id
+        WHERE ABS(i.item_total - p.pay_total) > 1
+    """
 }
 
 if CHECKS:
