@@ -1,0 +1,24 @@
+name: 'olist_dbt'
+version: '1.0.0'
+
+profile: 'olist_dbt'
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  olist_dbt:
+    staging:
+      +materialized: view          # staging = light cleaning, no copies of the data
+      +schema: staging
+    marts:
+      +materialized: table         # marts = business-ready tables, built once, queried often
+      +schema: marts

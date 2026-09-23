@@ -1,0 +1,95 @@
+version: 2
+
+sources:
+  - name: raw                      # referenced in models as {{ source('raw', 'orders') }}
+    schema: raw                    # the schema created by scripts/01_load_raw.py
+    description: Untouched Olist CSVs loaded into DuckDB.
+    tables:
+      - name: orders
+        description: One row per order.
+        columns:
+          - name: order_id
+            description: Primary key.
+            data_tests: [unique, not_null]
+          - name: customer_id
+            description: Per-ORDER customer key. NOT the person; see customers.customer_unique_id.
+            data_tests: [not_null]
+          - name: order_status
+            data_tests:
+              - accepted_values:
+                  arguments:
+                    values: ['delivered','shipped','canceled','unavailable','invoiced','processing','created','approved']
+
+      - name: order_items
+        description: One row per item within an order.
+        columns:
+          - name: order_id
+            data_tests:
+              - not_null
+              - relationships:
+                  arguments:
+                    to: source('raw','orders')
+                    field: order_id
+          - name: product_id
+            data_tests: [not_null]
+          - name: seller_id
+            data_tests: [not_null]
+          - name: price
+            data_tests: [not_null]
+
+      - name: order_payments
+        description: One row per payment attempt on an order.
+        columns:
+          - name: order_id
+            data_tests:
+              - not_null
+              - relationships:
+                  arguments:
+                    to: source('raw','orders')
+                    field: order_id
+
+      - name: order_reviews
+        description: Customer reviews. review_id is NOT unique (814 duplicates); 547 orders have >1 review.
+        columns:
+          - name: review_id
+            data_tests: [not_null]
+          - name: order_id
+            data_tests:
+              - not_null
+              - relationships:
+                  arguments:
+                    to: source('raw','orders')
+                    field: order_id
+          - name: review_score
+            data_tests:
+              - accepted_values:
+                  arguments:
+                    values: [1, 2, 3, 4, 5]
+                    quote: false
+
+      - name: customers
+        description: One row per customer_id (i.e. per order). customer_unique_id identifies the person.
+        columns:
+          - name: customer_id
+            data_tests: [unique, not_null]
+          - name: customer_unique_id
+            data_tests: [not_null]
+
+      - name: products
+        columns:
+          - name: product_id
+            data_tests: [unique, not_null]
+
+      - name: sellers
+        columns:
+          - name: seller_id
+            data_tests: [unique, not_null]
+
+      - name: category_translation
+        description: Portuguese to English category names. 2 categories have no translation.
+        columns:
+          - name: product_category_name
+            data_tests: [unique, not_null]
+
+      - name: geolocation
+        description: Zip-prefix coordinates. Many rows per prefix and some points outside Brazil; not used in this project.

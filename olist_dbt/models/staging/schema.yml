@@ -1,0 +1,101 @@
+version: 2
+
+models:
+  - name: stg_orders
+    description: >
+      One row per order, with delivery timing flags.
+      is_late is NULL when the order has no delivery date (order not delivered, or 8 delivered
+      orders with a missing date), so late rate is measured only over delivered orders with a date.
+    columns:
+      - name: order_id
+        description: Primary key.
+        data_tests: [unique, not_null]
+      - name: customer_id
+        description: Per-order customer key; join to stg_customers for customer_unique_id.
+        data_tests: [not_null]
+      - name: order_status
+        data_tests: [not_null]
+
+  - name: stg_order_reviews
+    description: >
+      One row per order — the most recent review. Deduplicated from 99,224 raw rows
+      (review_id is not unique: 814 duplicates; 547 orders had more than one review).
+    columns:
+      - name: order_id
+        description: Primary key after deduplication. This test IS the proof the dedup worked.
+        data_tests: [unique, not_null]
+      - name: review_score
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4, 5]
+                quote: false
+
+  - name: stg_customers
+    description: One row per customer_id (i.e. per order). customer_unique_id identifies the person.
+    columns:
+      - name: customer_id
+        data_tests: [unique, not_null]
+      - name: customer_unique_id
+        # TODO: add not_null. why NOT unique? : customer_unique_id identifies unique person.
+        data_tests: [not_null]
+
+  - name: stg_products
+    columns:
+      - name: product_id
+        data_tests: [unique, not_null]
+      - name: category
+        # TODO: no test here. Answer in this comment: why is not_null wrong for this column?
+        description: English category name, falling back to Portuguese when untranslated.
+
+  - name: stg_sellers
+    columns:
+      - name: seller_id
+        data_tests: [unique, not_null]
+      - name: state
+        data_tests: [not_null]
+
+  - name: stg_order_items
+    description: One row per item line. Key is (order_id, order_item_id).
+    columns:
+      - name: order_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_orders')
+                field: order_id
+      - name: product_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_products')
+                field: product_id
+      - name: seller_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_sellers')
+                field: seller_id
+      - name: item_revenue
+        description: price + freight for this line.
+        data_tests: [not_null]
+
+  - name: stg_order_payments
+    description: One row per payment on an order. Key is (order_id, payment_sequential).
+    columns:
+      - name: order_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_orders')
+                field: order_id
+
+  - name: stg_category_translation
+    columns:
+      - name: category_pt
+        data_tests: [unique, not_null]
