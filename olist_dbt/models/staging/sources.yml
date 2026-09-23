@@ -1,4 +1,4 @@
-version: 2
+version: 2                         # the YAML schema version dbt expects (always 2)
 
 sources:
   - name: raw                      # referenced in models as {{ source('raw', 'orders') }}
