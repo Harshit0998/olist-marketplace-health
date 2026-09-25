@@ -1,0 +1,131 @@
+version: 2
+
+models:
+  - name: fct_orders
+    description: >
+      One row per order. The central fact table. Child tables (items, payments)
+      are pre-aggregated to order grain before joining, so the row count equals
+      stg_orders exactly. Reviews are already one-per-order after deduplication.
+    columns:
+      - name: order_id
+        description: Primary key. This test is the fan-out guard.
+        data_tests: [unique, not_null]
+
+      - name: customer_id
+        description: Per-order customer key. Join to dim_customers for the person.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_customers')
+                field: customer_id
+
+      - name: order_status
+        data_tests: [not_null]
+
+      - name: n_items
+        description: Item lines on the order. Zero when no item rows exist.
+        data_tests: [not_null]
+
+      - name: review_score
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4, 5]
+                quote: false
+
+      - name: has_review
+        data_tests: [not_null]
+
+      - name: order_revenue
+        description: >
+          GMV for the order — sum of price + freight across item lines.
+          No not_null test: NULL here means no item rows existed for the order,
+          which is a real gap in the source, not a rule violation.
+
+      - name: is_late
+        description: >
+          True when delivered after the estimate. NULL when undelivered.
+          No not_null test: NULL means the question cannot be answered yet,
+          which is by design, not a data problem.
+
+  - name: dim_customers
+    description: >
+      One row per PERSON (customer_unique_id), not per order. 96,096 rows vs
+      99,441 orders. City and state are the person's most recent known location,
+      chosen by ROW_NUMBER over purchased_at desc with customer_id as tiebreak
+      for reproducibility.
+    columns:
+      - name: customer_unique_id
+        description: Primary key. The person.
+        data_tests: [unique, not_null]
+
+      - name: n_orders
+        data_tests: [not_null]
+
+      - name: is_repeat
+        description: True when n_orders > 1. 2,997 people (3.1%).
+        data_tests: [not_null]
+
+      - name: state
+        data_tests: [not_null]
+
+  - name: dim_sellers
+    description: >
+      One row per seller (3,095). Carries location plus lifetime performance:
+      volume, revenue, average review and late rate. seller_orders is
+      de-duplicated to one row per (seller, order) so a multi-line order is
+      not counted several times.
+    columns:
+      - name: seller_id
+        description: Primary key.
+        data_tests: [unique, not_null]
+
+      - name: state
+        data_tests: [not_null] 
+
+      - name: n_orders
+        description: Distinct orders the seller appeared on.
+        data_tests: [not_null]
+
+      - name: late_rate
+        description: >
+          n_late / n_late_known. NULL when the seller has no delivered orders
+          with a known delivery date. Unweighted mean across sellers is 8.42%,
+          higher than the 8.11% order-weighted rate — small sellers deliver worse.
+        data_tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 1 
+
+  - name: fct_seller_monthly
+    description: >
+      One row per seller per calendar month of order purchase. Sparse — a month
+      with no sales produces no row, so downstream feature engineering must
+      treat a missing month as zero sales, not as missing data. Numerator and
+      denominator (n_late, n_late_known) are both carried because rates cannot
+      be averaged across months; they must be recomputed from the counts.
+      This is the table the seller risk scorecard trains on.
+
+    columns:
+      - name: seller_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_sellers')
+                field: seller_id
+      - name: order_month
+        description: First day of the month the order was placed.
+        data_tests: [not_null]
+
+      - name: n_orders
+        data_tests: [not_null]
+
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - seller_id
+              - order_month
