@@ -22,13 +22,7 @@ seller_orders as (
     join orders o on o.order_id = i.order_id
 ),
 
--- TODO 1: aggregate seller_orders to one row per seller:
---   n_orders        count of distinct orders
---   first_sale_at   earliest purchased_at
---   last_sale_at    latest purchased_at
---   n_late          count of orders where is_late is true
---   n_late_known    count of orders where is_late is not null
---   avg_review      average review_score
+
 order_stats as (
     select
         so.seller_id,

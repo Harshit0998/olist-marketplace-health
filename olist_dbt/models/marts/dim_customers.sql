@@ -7,6 +7,7 @@ orders as (
 ),
 
 -- one row per ORDER, carrying both the person key and the order facts
+
 person_orders as (
     select
         c.customer_unique_id,
