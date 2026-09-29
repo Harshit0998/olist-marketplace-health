@@ -128,4 +128,41 @@ models:
           arguments:
             combination_of_columns:
               - seller_id
-              - order_month
+              - order_month   
+                
+  - name: fct_monthly
+    description: >
+      One row per calendar month across the whole dataset, including incomplete months at
+      both ends. The analysis window is applied downstream, not here; n_reviews exposes the
+      incompleteness. Nov 2016 has no row because it had no orders.
+    columns:
+      - name: order_month
+        data_tests: [unique, not_null]
+      - name: n_orders
+        data_tests: [not_null]
+      - name: n_customers
+        data_tests: [not_null]
+
+  - name: fct_cohort_retention
+    description: >
+      One row per (cohort_month, month_number), for cohorts formed inside the analysis
+      window. Triangular by construction: a row exists only where the month has elapsed by
+      2018-08-31, so an unobserved month is absent rather than zero. 210 rows = 20+19+...+1.
+    columns:
+      - name: cohort_month
+        data_tests: [not_null]
+      - name: month_number
+        data_tests: [not_null]
+      - name: retention
+        data_tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 1
+                inclusive: true
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - cohort_month
+              - month_number

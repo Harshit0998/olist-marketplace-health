@@ -16,7 +16,8 @@ renamed as (
         order_delivered_customer_date                           as delivered_at,
         order_estimated_delivery_date                           as estimated_delivery_at,
 
-        order_delivered_customer_date > estimated_delivery_at   as is_late,
+        date_diff('day', order_estimated_delivery_date,
+                 order_delivered_customer_date) > 0             as is_late,
         
         date_diff('day', order_purchase_timestamp,
                          order_delivered_customer_date)         as delivery_days,

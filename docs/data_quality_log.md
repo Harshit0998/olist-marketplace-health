@@ -42,7 +42,7 @@ not corrected · \*\*Clean\*\* = checked, nothing found.
 
 | 11 | Delivered before purchased | 0 | — | Checked; no negative delivery times | Clean |
 
-
+| 12 | `is_late` counted same-day deliveries as late | 1,292 orders had `is_late = TRUE` with `delay_days = 0` | Inflated the late count by 20% and diluted the measured review effect, because those customers behaved like on-time customers (avg review ≈ 4.1) | Redefined as `date_diff('day', estimated, delivered) > 0` — late means a later calendar day than promised. Late rate moved 8.11% → 6.77% | **Fixed** |
 
 \## What became an automated test, and what did not
 
