@@ -27,8 +27,7 @@ for t in tables:
     lines += [f"## raw.{t} — {n:,} rows", "", s.to_markdown(index=False), ""]
 
 # ---------------------------------------------------------------------------
-# Part 2 — YOUR checks. Each query should return ONE number; 0 usually = clean.
-# Write the SQL yourself. Examples of what to test are in the comments.
+# Part 2 — Checks. Each query should return ONE number; 0 usually = clean.
 # ---------------------------------------------------------------------------
 CHECKS = {
     "1 orders: duplicate order_id": "SELECT COUNT(*) - COUNT(DISTINCT order_id) FROM raw.orders",

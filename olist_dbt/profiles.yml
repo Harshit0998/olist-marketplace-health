@@ -1,5 +1,5 @@
 # Connection settings for this project.
-# Kept inside the repo (not in ~/.dbt) so the project is reproducible by anyone, including CI.
+# Kept inside the repo (not in ~/.dbt) so the project is reproducible by anyone.
 olist_dbt:
   target: dev
   outputs:
@@ -7,3 +7,4 @@ olist_dbt:
       type: duckdb
       path: ../olist.duckdb      # the database created by scripts/01_load_raw.py
       threads: 4
+      schema: main

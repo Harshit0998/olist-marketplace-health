@@ -1,0 +1,15 @@
+# Normalise line endings inside the repository; check out native per platform.
+# Without this, every file edited on Windows shows as fully rewritten in a diff.
+* text=auto
+
+# Never touch these
+*.png      binary
+*.pbix     binary
+*.duckdb   binary
+*.xlsx     binary
+*.parquet  binary
+
+# Notebooks and SQL stay LF so diffs and CI behave identically everywhere
+*.ipynb    text eol=lf
+*.sql      text eol=lf
+*.yml      text eol=lf
