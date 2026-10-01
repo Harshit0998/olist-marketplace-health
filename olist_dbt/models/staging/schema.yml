@@ -38,7 +38,6 @@ models:
       - name: customer_id
         data_tests: [unique, not_null]
       - name: customer_unique_id
-        # TODO: add not_null. why NOT unique? : customer_unique_id identifies unique person.
         data_tests: [not_null]
 
   - name: stg_products
@@ -46,7 +45,6 @@ models:
       - name: product_id
         data_tests: [unique, not_null]
       - name: category
-        # TODO: no test here. Answer in this comment: why is not_null wrong for this column?
         description: English category name, falling back to Portuguese when untranslated.
 
   - name: stg_sellers

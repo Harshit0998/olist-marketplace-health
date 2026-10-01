@@ -36,9 +36,6 @@ order_stats as (
     group by so.seller_id
 ),
 
--- TODO 2: aggregate stg_order_items to one row per seller:
---   n_items         count of item lines
---   total_revenue   sum of item_revenue
 item_stats as (
     select
         i.seller_id,

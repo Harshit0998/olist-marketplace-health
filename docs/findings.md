@@ -98,6 +98,22 @@ fixed-horizon comparison should be interpreted.
 
 ---
 
+### 2.2 Why RFM segmentation was not done
+
+RFM (recency, frequency, monetary) was in the project plan and was dropped, deliberately.
+
+With **96.9% of customers placing exactly one order**, Frequency takes the same value for
+almost every customer — the dimension is degenerate. Recency then collapses to the date of
+that single order and Monetary to its value, so two of the three axes carry the same
+information and the third carries none. Quintile-scoring this would produce segment labels
+that look sophisticated and mean nothing.
+
+Segmentation on this marketplace would have to be built on something other than purchase
+frequency — category, geography, or first-order experience. That is a different piece of
+work and is not claimed here.
+
+---
+
 ## 3. The overall late rate hides a nineteen-fold range
 
 The headline is **6.77% of delivered orders arriving after the promised date** — 6,535 of
@@ -232,27 +248,66 @@ same-SELECT alias, which makes the model portable beyond DuckDB.
 
 ---
 
-## 6. What this analysis cannot claim
+## 6. Controlling for geography and product mix
+
+The 2.02-star gap is a raw comparison. If late orders are concentrated where reviews would
+have been poor anyway, part of that gap belongs to the place or the product rather than to
+the delay. Two candidates were tested by stratification: compute the on-time and late
+averages *within* each stratum, then weight the within-stratum gaps by each stratum's share
+of orders.
+
+| Comparison | Gap in stars | Share of the raw gap explained |
+|---|---|---|
+| Raw, no control | 2.02 | — |
+| Within customer state | **1.93** | 4.5% |
+| Within product category | **2.08** | none — the gap widens slightly |
+
+**Geography moves almost nothing, and the reason is directly visible.** Lateness is strongly
+geographic: the late rate runs from 4.0% in Paraná to 20.8% in Alagoas. But the *on-time*
+review average is flat across every state, 4.14 to 4.36. A confounder needs two independent
+arrows — one into the treatment and one into the outcome. State plainly has the first. It
+does not have the second: customers in slow states are not harsher raters, they are rating
+slow deliveries. That is the effect itself, not a confound, and controlling for it would be
+over-adjusting.
+
+**Product mix explains nothing at all.** The late rate varies only from 5.0% to 8.3% across
+categories, against 4.0%–20.8% across states. Lateness is a logistics phenomenon rather than
+a product-type one, so there is little for category to absorb.
+
+One genuine product-quality effect does exist and is worth recording: `office_furniture`
+averages **3.90 even when delivered on time**, well below the 4.29 on-time average. It is
+too small to move the aggregate, and its presence is reassuring — it shows the method would
+have detected this pattern had it been widespread.
+
+**A caution for any geographic recommendation.** Alagoas has the worst late rate at 20.8%
+and 394 orders. São Paulo has 40,267 — 42% of the marketplace — and is already among the
+better performers. Within-group gap × group share is what decides impact: fixing the worst
+state completely is a rounding error against a one-point improvement in the largest one.
+
+---
+
+## 7. What this analysis cannot claim
 
 The data is observational. Orders are not randomly assigned to be late, so the on-time/late
 comparison includes the effect of everything that *causes* lateness:
 
-| Confounder | Independent path to a bad review |
-|---|---|
-| Geography | Remote states are slower *and* may rate differently |
-| Product weight and size | Heavy items ship slowly *and* arrive damaged or oversized |
-| Category | Furniture is slow *and* more disappointing on arrival |
-| Seller quality | A careless seller packs badly *and* dispatches slowly |
-| Multi-seller orders | Several warehouses means more chances of lateness *and* of error |
-| Seasonal load | Peaks strain logistics *and* attract different customers |
+| Confounder | Independent path to a bad review | Tested |
+|---|---|---|
+| Geography | Remote states are slower *and* may rate differently | Yes — section 6; accounts for 4.5% of the gap |
+| Product weight and size | Heavy items ship slowly *and* arrive damaged or oversized | Not yet |
+| Category | Furniture is slow *and* more disappointing on arrival | Yes — section 6; accounts for none of it |
+| Seller quality | A careless seller packs badly *and* dispatches slowly | Not yet |
+| Multi-seller orders | Several warehouses means more chances of lateness *and* of error | Not yet |
+| Seasonal load | Peaks strain logistics *and* attract different customers | Not yet |
 
-The comparison is therefore an **association**, not a causal effect, and the dose-response
-curve strengthens it without establishing causation. Three checks are available and not yet
-done:
+The comparison is therefore an **association**, not a causal effect, although the
+dose-response curve and the controls in section 6 narrow the room for an alternative
+explanation considerably. Geography and product mix have now been tested and neither
+accounts for the gap. Three checks remain:
 
-- Compare within state and within category, to rule out geography and product mix.
 - Test whether heavy items receive worse reviews *even when delivered on time* — the direct
   test of whether weight is a confounder rather than a link in the chain.
+- Test whether sellers with high late rates also sell lower-rated products when on time.
 - Control for monthly order volume, since the monthly association could be driven by load.
 
 Establishing causation requires an experiment. That design is section 4 of the project plan.
@@ -271,7 +326,8 @@ Establishing causation requires an experiment. That design is section 4 of the p
 
 ## Still to do
 
-- Cohort retention table and heatmap (`fct_cohort_retention`)
-- Conditional association: late-delivery effect within state and category
-- Weight-as-confounder test on on-time orders only
+- Weight-as-confounder test, on on-time orders only
+- Seller-quality-as-confounder test: late rate vs on-time review score across sellers
+- Seller churn vs late rate, using `fct_seller_monthly`
+- Seller risk scorecard (D6)
 - Seller churn against late rate, using `fct_seller_monthly`
