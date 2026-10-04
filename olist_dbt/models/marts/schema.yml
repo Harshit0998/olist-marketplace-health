@@ -166,3 +166,122 @@ models:
             combination_of_columns:
               - cohort_month
               - month_number
+
+  - name: fct_seller_snapshots
+    description: >
+      Modelling panel for the seller risk scorecard. One row per (seller_id,
+      snapshot_month) for 12 monthly snapshots, Jun 2017 to May 2018. Features
+      (obs_*) are aggregated over the 6 months ending AT the snapshot, inclusive.
+      The outcome (perf_*) is aggregated over the 3 months AFTER the snapshot.
+      The two windows are disjoint by construction and the snapshot month belongs
+      to the observation side. Eligibility: at least 10 delivered orders with a
+      known lateness outcome in the observation window, and at least 5 in the
+      performance window. 4,522 rows, 767 distinct sellers, 27.7% bad.
+    columns:
+      - name: snapshot_month
+        data_tests: [not_null]
+      - name: seller_id
+        data_tests: [not_null]
+      - name: is_bad
+        description: perf_late_rate above 0.10.
+        data_tests: [not_null]
+      - name: obs_known
+        description: Observation-window denominator. Eligibility floor is 10.
+        data_tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 10
+                inclusive: true
+      - name: perf_known
+        description: Performance-window denominator. Eligibility floor is 5.
+        data_tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 5
+                inclusive: true
+      - name: obs_late_rate
+        data_tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments: {min_value: 0, max_value: 1, inclusive: true}
+      - name: perf_late_rate
+        data_tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments: {min_value: 0, max_value: 1, inclusive: true}
+      - name: obs_avg_review
+        data_tests:
+          - dbt_utils.accepted_range:
+              arguments: {min_value: 1, max_value: 5, inclusive: true}
+      - name: obs_active_months
+        description: Months traded within the 6-month observation window.
+        data_tests:
+          - dbt_utils.accepted_range:
+              arguments: {min_value: 1, max_value: 6, inclusive: true}
+      - name: tenure_months
+        data_tests:
+          - dbt_utils.accepted_range:
+              arguments: {min_value: 0, inclusive: true}
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - seller_id
+              - snapshot_month
+
+  - name: fct_delivery_by_state
+    description: >
+      One row per customer state, over orders where lateness is known (96,476).
+      Feeds the delivery map. Same denominator as the headline late rate, so the
+      dashboard and docs/findings.md cannot disagree. share_of_orders lets a
+      reader weight any state's gap by its size before acting on it.
+    columns:
+      - name: state
+        data_tests: [unique, not_null]
+      - name: n_orders
+        data_tests: [not_null]
+      - name: late_rate
+        data_tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments: {min_value: 0, max_value: 1, inclusive: true}
+      - name: review_ontime
+        data_tests:
+          - dbt_utils.accepted_range:
+              arguments: {min_value: 1, max_value: 5, inclusive: true}
+      - name: review_late
+        data_tests:
+          - dbt_utils.accepted_range:
+              arguments: {min_value: 1, max_value: 5, inclusive: true}
+
+  - name: fct_delivery_by_category
+    description: >
+      One row per product category with at least 100 orders. An order is counted
+      in every category it contains; 97.9% contain exactly one, 0.74% span two or
+      more, so the order total slightly exceeds the marketplace total.
+    columns:
+      - name: category
+        data_tests: [unique, not_null]
+      - name: n_orders
+        data_tests: [not_null]
+      - name: late_rate
+        data_tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments: {min_value: 0, max_value: 1, inclusive: true}
+
+  - name: fct_delay_bands
+    description: >
+      The dose-response table. Bands are 1-3 / 4-7 / 8-14 / 15+ days late and match
+      docs/findings.md exactly. band_order exists so a BI tool sorts by severity
+      rather than alphabetically.
+    columns:
+      - name: band_order
+        data_tests: [unique, not_null]
+      - name: delay_band
+        data_tests: [unique, not_null]
+      - name: avg_review
+        data_tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments: {min_value: 1, max_value: 5, inclusive: true}
