@@ -256,6 +256,12 @@ the delay. Two candidates were tested by stratification: compute the on-time and
 averages *within* each stratum, then weight the within-stratum gaps by each stratum's share
 of orders.
 
+All rates in this section are computed over orders where lateness is known (96,476 of
+99,441), the same denominator as the headline late rate. An order is attributed to every
+category it contains; 97.9% hold exactly one. These definitions live in
+`fct_delivery_by_state`, `fct_delivery_by_category` and `fct_delay_bands`, so the dashboard
+and this document cannot drift apart.
+
 | Comparison | Gap in stars | Share of the raw gap explained |
 |---|---|---|
 | Raw, no control | 2.02 | — |
@@ -263,24 +269,27 @@ of orders.
 | Within product category | **2.08** | none — the gap widens slightly |
 
 **Geography moves almost nothing, and the reason is directly visible.** Lateness is strongly
-geographic: the late rate runs from 4.0% in Paraná to 20.8% in Alagoas. But the *on-time*
+geographic: among states with at least 500 orders the late rate runs from 4.0% in Paraná
+to 17.4% in Maranhão; across all 27 states it spans 2.8% to 21.4%, though both of those
+extremes rest on fewer than 400 orders. But the *on-time*
 review average is flat across every state, 4.14 to 4.36. A confounder needs two independent
 arrows — one into the treatment and one into the outcome. State plainly has the first. It
 does not have the second: customers in slow states are not harsher raters, they are rating
 slow deliveries. That is the effect itself, not a confound, and controlling for it would be
 over-adjusting.
 
-**Product mix explains nothing at all.** The late rate varies only from 5.0% to 8.3% across
-categories, against 4.0%–20.8% across states. Lateness is a logistics phenomenon rather than
-a product-type one, so there is little for category to absorb.
+**Product mix explains nothing at all.** Across categories of comparable size (2,000+ orders)
+the late rate varies only from 5.4% to 8.0%, against 4.0%–17.4% across states of comparable
+size. Lateness is a logistics phenomenon rather than a product-type one, so there is little
+for category to absorb.
 
 One genuine product-quality effect does exist and is worth recording: `office_furniture`
-averages **3.90 even when delivered on time**, well below the 4.29 on-time average. It is
+averages **3.76 even when delivered on time**, well below the 4.29 on-time average. It is
 too small to move the aggregate, and its presence is reassuring — it shows the method would
 have detected this pattern had it been widespread.
 
-**A caution for any geographic recommendation.** Alagoas has the worst late rate at 20.8%
-and 394 orders. São Paulo has 40,267 — 42% of the marketplace — and is already among the
+**A caution for any geographic recommendation.** Alagoas has the worst late rate at 21.4%
+on 397 orders. São Paulo has 40,495 — 42% of the marketplace — and is already among the
 better performers. Within-group gap × group share is what decides impact: fixing the worst
 state completely is a rounding error against a one-point improvement in the largest one.
 
