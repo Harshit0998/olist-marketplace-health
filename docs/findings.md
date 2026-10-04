@@ -15,27 +15,33 @@ reference to whether the numbers look favourable.
 
 ---
 
-## 1. Growth stopped five months before the data ends
+## 1. Growth stopped in January 2018
 
-| | Orders / month |
-|---|---|
-| Jan 2017 | 800 |
-| Mar 2018 | 7,211 — peak |
-| Apr 2018 | 6,939 |
-| May 2018 | 6,873 |
-| Jun 2018 | 6,167 |
-| Jul 2018 | 6,292 |
-| Aug 2018 | 6,512 |
+| | Orders / month | GMV |
+|---|---|---|
+| Jan 2017 | 800 | R$ 137k |
+| **Nov 2017** | **7,544 — peak** | **R$ 1.18M — peak** |
+| Dec 2017 | 5,673 | R$ 864k |
+| Jan 2018 | 7,269 | R$ 1.11M |
+| Feb 2018 | 6,728 | R$ 987k |
+| Mar 2018 | 7,211 | R$ 1.16M |
+| Apr 2018 | 6,939 | R$ 1.16M |
+| May 2018 | 6,873 | R$ 1.15M |
+| Jun 2018 | 6,167 | R$ 1.02M |
+| Jul 2018 | 6,292 | R$ 1.06M |
+| Aug 2018 | 6,512 | R$ 1.00M |
 
-2017 delivered roughly 9x growth. From March 2018 the business is flat to slightly
-declining for five consecutive months, holding around R$1.0–1.15M GMV per month.
+2017 delivered roughly 9x growth, from 800 orders in January to 7,544 in November. **From
+January 2018 the business is flat to slightly declining for eight consecutive months**,
+holding between 6,200 and 7,300 orders and R$1.0–1.16M GMV. **No month after November 2017
+beats it on either orders or GMV.**
+
+November 2017 is Black Friday. December falls back to 5,673 and the spike does not carry
+forward — but it does mark the ceiling the marketplace never passes again.
 
 **Average order value never moved.** It sits between R$145 and R$175 across the entire
-window with no trend, against an overall AOV of about R$159. Every rupee of GMV growth came
+window with no trend, against an overall AOV of about R$159. Every real of GMV growth came
 from *more orders*, not larger baskets — growth is purely an acquisition story.
-
-November 2017 is the single best month at 7,544 orders and R$1.18M — Black Friday. December
-falls back to 5,673. The spike did not carry forward.
 
 ---
 
