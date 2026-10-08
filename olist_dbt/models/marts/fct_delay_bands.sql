@@ -26,6 +26,8 @@ select
     delay_band,
     count(*)                                        as n_orders,
     count(review_score)                             as n_reviews,
+    sum(review_score)                               as review_points,
+    count(*) filter (where review_score <= 2)       as n_low,
     avg(review_score)                               as avg_review,
     count(*) filter (where review_score <= 2) * 1.0
       / nullif(count(review_score), 0)              as low_review_rate

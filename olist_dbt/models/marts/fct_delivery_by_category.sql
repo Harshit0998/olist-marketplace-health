@@ -29,6 +29,11 @@ select
     count(*) filter (where is_late)                         as n_late,
     count(*) filter (where is_late) * 1.0 / count(*)        as late_rate,
 
+    count(review_score) filter (where not is_late)          as n_reviewed_ontime,
+    count(review_score) filter (where     is_late)          as n_reviewed_late,
+    sum(review_score)   filter (where not is_late)          as review_points_ontime,
+    sum(review_score)   filter (where     is_late)          as review_points_late,
+
     avg(review_score) filter (where not is_late)            as review_ontime,
     avg(review_score) filter (where     is_late)            as review_late,
     avg(review_score) filter (where not is_late)
