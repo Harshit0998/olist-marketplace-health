@@ -27,6 +27,15 @@ by_state as (
         count(*) * 1.0 / sum(count(*)) over ()              as share_of_orders,
         count(*) filter (where is_late) * 1.0 / count(*)    as late_rate,
 
+        -- Weighted components, so a BI tool grouping several states together
+        -- divides summed points by summed reviews instead of averaging averages.
+        count(review_score) filter (where not is_late)      as n_reviewed_ontime,
+        count(review_score) filter (where     is_late)      as n_reviewed_late,
+        sum(review_score)   filter (where not is_late)      as review_points_ontime,
+        sum(review_score)   filter (where     is_late)      as review_points_late,
+        count(*) filter (where not is_late and review_score <= 2) as n_low_ontime,
+        count(*) filter (where     is_late and review_score <= 2) as n_low_late,
+
         avg(review_score) filter (where not is_late)        as review_ontime,
         avg(review_score) filter (where     is_late)        as review_late,
         avg(review_score) filter (where not is_late)
@@ -49,6 +58,12 @@ select
     b.n_orders,
     b.n_late,
     b.share_of_orders,
+    b.n_reviewed_ontime,
+    b.n_reviewed_late,
+    b.review_points_ontime,
+    b.review_points_late,
+    b.n_low_ontime,
+    b.n_low_late,
     b.late_rate,
     b.review_ontime,
     b.review_late,
