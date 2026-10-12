@@ -122,6 +122,8 @@ work and is not claimed here.
 
 ## 3. The overall late rate hides a nineteen-fold range
 
+![Late rate by state](img/late_rate_by_state.png)
+
 The headline is **6.77% of delivered orders arriving after the promised date** — 6,535 of
 96,476 orders where the outcome is known. Monthly, that ranges from **1% (Jun 2018) to 19%
 (Mar 2018)**, and review scores track inversely with it across all twenty months.
@@ -160,6 +162,8 @@ Nearly two thirds of late orders receive one or two stars, against 9% of on-time
 so the customer waited roughly three weeks beyond an already generous estimate.
 
 ### The effect scales with how late — and the damage is front-loaded
+
+![Review score by delay band](img/review_by_delay_band.png)
 
 | Lateness | Orders | Avg review | Change |
 |---|---|---|---|
@@ -333,6 +337,8 @@ sellers to 608. Every feature's Information Value rose as a result: `obs_late_ra
 trade was worth making.
 
 ### The rule that failed
+
+![Threshold drift](img/watchlist_drift.png)
 
 The obvious rule is an absolute threshold: flag a seller whose trailing late rate exceeds
 some cut. Searching the training period gave **late rate above 8% on at least 30 known
