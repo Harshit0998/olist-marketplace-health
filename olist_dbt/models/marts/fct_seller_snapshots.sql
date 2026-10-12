@@ -165,7 +165,11 @@ select snapshot_month,
        (perf_late * 1.0 / nullif(perf_known, 0)) > 0.10 as is_bad
 
 from joined
--- eligibility: enough history to build features on, enough future to judge by
+-- eligibility: enough history to build features on, enough future to judge by.
+-- perf_known raised from 5 to 10 on 12 Oct: below ten deliveries a single late
+-- parcel clears the 10% bad threshold, so the label was noise, not signal.
+-- 567 of 2,666 training rows were labelled on 5-9 deliveries and had the
+-- HIGHEST bad rate (40.2%) of any volume band - the tell that it was luck.
 where obs_known  >= 10
-  and perf_known >= 5
+  and perf_known >= 10
 order by snapshot_month, seller_id

@@ -26,6 +26,8 @@ TABLES = [
     "main_marts.dim_sellers",
     "main_marts.fct_seller_monthly",
     "main_marts.fct_seller_snapshots",
+    # page 4 - seller watchlist
+    "main_marts.fct_seller_watchlist",
 ]
 
 def main():

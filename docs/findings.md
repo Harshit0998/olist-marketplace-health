@@ -301,7 +301,112 @@ state completely is a rounding error against a one-point improvement in the larg
 
 ---
 
-## 7. What this analysis cannot claim
+## 7. Predicting which sellers will run late — and a rule that failed
+
+Every section above looks backwards. This one asks the forward question: at any
+given month, can we tell which sellers are about to breach an acceptable late rate?
+
+### The panel
+
+`fct_seller_snapshots` holds one row per seller per month, for twelve monthly vantage
+points from June 2017 to May 2018. Each row carries what was knowable at that moment —
+six months of trailing behaviour — and, separately, what happened over the three months
+after it. The windows are disjoint by construction, so nothing in the features can have
+been observed after the snapshot. `tests/assert_no_future_in_observation.sql` enforces
+this and **was verified by deliberate sabotage**: breaking the window bound makes it
+return 2,784 rows.
+
+A seller is **bad** at a snapshot if more than 10% of their deliveries in the following
+three months arrive late.
+
+### A label that was mostly luck
+
+The first eligibility floor required only five known deliveries in the performance window.
+At that volume a single late parcel produces a 20% late rate and tips the seller into
+"bad". 567 of 2,666 training rows were labelled on five to nine deliveries, and that band
+had the **highest** bad rate of any volume band, 40.2% — the tell that it was measuring
+luck rather than quality.
+
+Raising the floor to ten deliveries drops the panel from 4,522 rows to 3,407 and from 767
+sellers to 608. Every feature's Information Value rose as a result: `obs_late_rate` from
+0.189 to 0.263, `state` from 0.126 to 0.182. Cleaner labels, more signal, less data — the
+trade was worth making.
+
+### The rule that failed
+
+The obvious rule is an absolute threshold: flag a seller whose trailing late rate exceeds
+some cut. Searching the training period gave **late rate above 8% on at least 30 known
+deliveries**, which flagged 9.0% of seller-months, of which 65.4% went on to fail — a lift
+of 2.11 over the 31.0% base rate.
+
+On the February–May 2018 holdout it collapsed to a lift of **1.12**, barely better than
+guessing. The cause is visible in one table:
+
+| Snapshot | Marketplace late rate (observation window) | Rule fires on | Actually bad |
+|---|---|---|---|
+| Aug 2017 | 3.2% | 2.5% | 22.8% |
+| Oct 2017 | 3.3% | 4.3% | 29.1% |
+| Dec 2017 | 6.4% | 16.7% | 50.9% |
+| Feb 2018 | 8.4% | 28.5% | 41.8% |
+| Mar 2018 | 11.0% | 39.8% | 9.6% |
+| May 2018 | 9.4% | 36.9% | 8.6% |
+
+The marketplace late rate tripled. A threshold that singled out 2.5% of sellers in August
+2017 picks up 40% of them by March 2018 — not because those sellers got worse, but because
+8% had stopped being unusual. Meanwhile the outcome drifted the other way as the November
+backlog cleared, so by March more sellers looked bad while fewer were. The rule inverted.
+
+**It had not learned "bad seller". It had learned "8% is a lot", which is a fact about
+2017 rather than about sellers.**
+
+### The rule that held
+
+Ranking instead of thresholding removes the dependence on the level. Each month, rank
+eligible sellers by trailing late rate and flag the worst slice; the rule re-reads the
+market every month and cannot drift.
+
+| | Train lift | Holdout lift | Holdout, unseen sellers |
+|---|---|---|---|
+| Absolute: late rate > 8% | **2.11** | 1.12 | 1.09 |
+| Relative: worst 15% that month | 1.60 | **1.51** | 1.82 |
+
+**The rule that looked better in training is the one that failed.** The 2.11 was not skill;
+it was a threshold that happened to suit the period it was fitted on.
+
+The final rule, in `fct_seller_watchlist`: **each month, flag the worst 15% of sellers by
+trailing six-month late rate, among those with at least 30 known deliveries.** About 24
+sellers a month. One in four of them goes on to breach the 10% threshold, against a base
+rate of 17.3% — half again as likely as a seller drawn at random, and that held out of time.
+The unseen-seller column matters because 434 sellers appear in both periods: on sellers the
+rule had never met it scored 1.82, so it is reading behaviour and not recognising names.
+Only 283 rows and 19 flags sit behind that figure, so it is directional, not precise.
+
+The 15% cut was chosen on training data by workload, not by performance — lift was flat
+between 1.54 and 1.61 across every cut from 5% to 30%, so there was no optimum to find,
+only a list size an ops team can work through. `tests/assert_watchlist_flag_rate_stable.sql`
+fails the build if any month flags outside 10–20% of eligible sellers; the absolute rule
+would fail it on sight.
+
+### What this rule is not
+
+It is not a scorecard. It uses one feature, assigns no points and produces no probability,
+so it cannot be calibrated and cannot support a decision that needs a cost attached. It
+ranks, and ranking is all it claims to do.
+
+The honest ceiling is worth stating plainly. When 17% of sellers go bad and the list holds
+10% of them, the most any rule of that size could catch is 59% of failures; this one catches
+15.5%. Most sellers who fail are not on the list, and a watchlist is a triage tool rather
+than a safety net.
+
+**Three looks at the holdout** were used in reaching this: one for the absolute rule, one
+diagnostic, one for the final rule. The percentile was never tuned on it, but each look
+costs a little independence and the count belongs in the record.
+
+---
+
+---
+
+## 8. What this analysis cannot claim
 
 The data is observational. Orders are not randomly assigned to be late, so the on-time/late
 comparison includes the effect of everything that *causes* lateness:
@@ -344,5 +449,3 @@ Establishing causation requires an experiment. That design is section 4 of the p
 - Weight-as-confounder test, on on-time orders only
 - Seller-quality-as-confounder test: late rate vs on-time review score across sellers
 - Seller churn vs late rate, using `fct_seller_monthly`
-- Seller risk scorecard (D6)
-- Seller churn against late rate, using `fct_seller_monthly`

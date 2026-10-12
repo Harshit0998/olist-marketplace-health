@@ -175,8 +175,11 @@ models:
       The outcome (perf_*) is aggregated over the 3 months AFTER the snapshot.
       The two windows are disjoint by construction and the snapshot month belongs
       to the observation side. Eligibility: at least 10 delivered orders with a
-      known lateness outcome in the observation window, and at least 5 in the
-      performance window. 4,522 rows, 767 distinct sellers, 27.7% bad.
+      known lateness outcome in the observation window, and at least 10 in the
+      performance window. 3,407 rows, 608 distinct sellers, 25.7% bad.
+      The performance floor was raised from 5 to 10 on 12 Oct 2026: below ten
+      deliveries a single late parcel clears the 10% threshold, so the label
+      carried more luck than signal.
     columns:
       - name: snapshot_month
         data_tests: [not_null]
@@ -193,11 +196,11 @@ models:
                 min_value: 10
                 inclusive: true
       - name: perf_known
-        description: Performance-window denominator. Eligibility floor is 5.
+        description: Performance-window denominator. Eligibility floor is 10.
         data_tests:
           - dbt_utils.accepted_range:
               arguments:
-                min_value: 5
+                min_value: 10
                 inclusive: true
       - name: obs_late_rate
         data_tests:
@@ -285,3 +288,41 @@ models:
           - not_null
           - dbt_utils.accepted_range:
               arguments: {min_value: 1, max_value: 5, inclusive: true}
+
+  - name: fct_seller_watchlist
+    description: >
+      Monthly seller risk watchlist. One row per (snapshot_month, seller_id),
+      carrying each seller's rank within that month and whether the rule flagged
+      them. The rule is RELATIVE: flag the worst 15% of sellers by trailing
+      six-month late rate, among those with at least 30 known deliveries.
+      Relative rather than absolute because the marketplace late rate tripled
+      between mid-2017 and early 2018; an absolute cut of 8% reached lift 2.11
+      on the training period and fell to 1.12 out of time, while the ranked rule
+      held at 1.60 train / 1.51 holdout. perf_* and is_bad are the outcome and
+      exist for backtesting only - they are not known when a seller is flagged.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [snapshot_month, seller_id]
+    columns:
+      - name: snapshot_month
+        data_tests: [not_null]
+      - name: seller_id
+        data_tests: [not_null]
+      - name: is_flagged
+        description: Worst 15% of eligible sellers in that snapshot month.
+        data_tests: [not_null]
+      - name: is_eligible
+        description: At least 30 known deliveries in the observation window.
+        data_tests: [not_null]
+      - name: pct_rank
+        description: Ascending percentile of obs_late_rate within the month; null if not eligible.
+        data_tests:
+          - dbt_utils.accepted_range:
+              arguments: {min_value: 0, max_value: 1, inclusive: true}
+      - name: mkt_late_rate
+        description: Marketplace-wide late rate in the same observation window.
+        data_tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments: {min_value: 0, max_value: 1, inclusive: true}
