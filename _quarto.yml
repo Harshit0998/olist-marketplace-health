@@ -1,0 +1,44 @@
+# Renders docs/ into a website published to GitHub Pages by .github/workflows/pages.yml.
+# Nothing here needs Quarto installed locally - the workflow does the rendering.
+project:
+  type: website
+  output-dir: _site
+  render:
+    - index.qmd
+    - docs/findings.md
+    - docs/metrics.md
+    - docs/data_quality_log.md
+    - docs/data_profile.md
+    - docs/business_brief.md
+
+website:
+  title: "Olist Marketplace Health"
+  description: "What late delivery costs a Brazilian e-commerce marketplace"
+  page-navigation: true
+  navbar:
+    left:
+      - href: index.qmd
+        text: Overview
+      - href: docs/findings.md
+        text: Findings
+      - href: docs/metrics.md
+        text: Metrics
+      - href: docs/data_quality_log.md
+        text: Data quality
+    right:
+      - icon: github
+        href: https://github.com/Harshit0998/olist-marketplace-health
+        aria-label: Source on GitHub
+  page-footer:
+    center: "Built with dbt, DuckDB and Power BI · [source](https://github.com/Harshit0998/olist-marketplace-health)"
+
+format:
+  html:
+    theme: cosmo
+    toc: true
+    toc-depth: 3
+    toc-title: "On this page"
+    anchor-sections: true
+    code-copy: true
+    fig-cap-location: bottom
+    link-external-newwindow: true
