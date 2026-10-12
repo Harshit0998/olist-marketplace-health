@@ -22,14 +22,14 @@ What do late deliveries cost this marketplace?
 of late ones do. The damage is front-loaded — most of it lands in the first three days
 past the promise.
 
-![](docs/img/review_by_delay_band.png)
+![Average review score falls from 4.29 on time to 1.67 for orders eight to fourteen days late, with the steepest drop in the first three days.](docs/img/review_by_delay_band.png){fig-alt="Bar chart of average review score by lateness band"}
 
 **It does not measurably cost repeat purchases — because there are none to lose.**
 Only 3.1% of customers ever order twice. The apparent collapse in retention across
 cohorts turned out to be an artefact of how long each cohort had been observed; at a
 fixed three-month horizon it is flat at 1.09%.
 
-![](docs/img/cohort_retention.png)
+![The naive measure falls from 4.8% to 0.7% across cohorts; measured at a fixed three-month horizon it is flat at 1.09%. The difference is observation length, not behaviour.](docs/img/cohort_retention.png){fig-alt="Two lines: naive ever-returned declining, fixed three-month retention flat"}
 
 **So the cost is acquisition damage, not churn** — roughly 4,050 one- and two-star
 reviews attributable to late delivery, of which about 3,450 are in excess of the
@@ -49,13 +49,13 @@ marketplace late rate had tripled, so the rule had learned that 8% was unusual, 
 is a fact about 2017 rather than about sellers. Ranking sellers within each month
 scored *worse* in training, 1.60, and held at 1.51.
 
-![](docs/img/watchlist_drift.png)
+![The share of sellers a fixed 8% threshold flags and the share that actually go bad cross over in March 2018, as the marketplace late rate climbs from 3.2% to 11%.](docs/img/watchlist_drift.png){fig-alt="Three lines showing a fixed threshold inverting against the outcome it predicts"}
 
 The rule that looked better in training is the one that failed.
 
 ## The dashboard
 
-![](docs/img/dashboard-p2-delivery-and-reviews.png)
+![Page two of the Power BI dashboard: late rate by state, the dose-response staircase, on-time versus late review scores by region, and a category scatter.](docs/img/dashboard-p2-delivery-and-reviews.png){fig-alt="Power BI dashboard page showing delivery and review analysis"}
 
 Three pages in Power BI, built on the tested marts rather than re-deriving metrics in
 DAX — which caught four errors in the written analysis along the way.
