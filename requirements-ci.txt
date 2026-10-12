@@ -1,0 +1,4 @@
+# Just enough to build and test the project. The full requirements.txt also
+# carries the analysis stack (pandas, matplotlib, scikit-learn, jupyter), which
+# CI does not need and which costs about two minutes of install time per run.
+dbt-duckdb==1.11.0

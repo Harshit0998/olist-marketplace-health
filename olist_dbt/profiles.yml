@@ -1,10 +1,22 @@
 # Connection settings for this project.
 # Kept inside the repo (not in ~/.dbt) so the project is reproducible by anyone.
+#
+# Two targets against the same models:
+#   dev  - the full Kaggle dataset in ../olist.duckdb        (default)
+#   ci   - the committed 3.5 MB sample in ../olist_ci.duckdb (what CI builds)
+#
+# They are separate files on purpose. Pointing CI at the dev database would
+# overwrite a real build with ten sellers' worth of data.
 olist_dbt:
   target: dev
   outputs:
     dev:
       type: duckdb
-      path: ../olist.duckdb      # the database created by scripts/01_load_raw.py
+      path: ../olist.duckdb         # built by scripts/01_load_raw.py
+      threads: 4
+      schema: main
+    ci:
+      type: duckdb
+      path: ../olist_ci.duckdb      # built by scripts/01_load_raw.py --sample --db olist_ci.duckdb
       threads: 4
       schema: main

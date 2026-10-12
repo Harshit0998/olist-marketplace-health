@@ -1,0 +1,52 @@
+name: dbt build
+
+# Every push and every pull request rebuilds the whole project from the
+# committed sample and runs all 123 tests. The real Kaggle data is 121 MB and
+# is not in the repo, so CI builds against data/sample/ instead - a ten-seller
+# slice that still satisfies every foreign key. See scripts/00_make_sample.py.
+#
+# Numbers from the sample do NOT match docs/findings.md. This job proves the
+# pipeline runs and the tests hold, not that the analysis reproduces.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: build and test on the sample
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements-ci.txt
+
+      - name: Install dbt
+        run: pip install -r requirements-ci.txt
+
+      - name: Load the sample into DuckDB
+        run: python scripts/01_load_raw.py --sample --db olist_ci.duckdb
+
+      - name: dbt deps
+        working-directory: olist_dbt
+        run: dbt deps
+
+      - name: dbt build
+        working-directory: olist_dbt
+        run: dbt build --target ci
+
+      # run_results.json says which tests ran and how long each took - worth
+      # keeping when a run fails and the log has scrolled past the reason
+      - name: Upload dbt artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dbt-target
+          path: olist_dbt/target/
+          retention-days: 14
