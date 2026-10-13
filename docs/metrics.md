@@ -146,7 +146,7 @@ while orders run to Oct 2018 — another reason for the window.
 
 ### Active months per seller
 Rows in `fct_seller_monthly` ÷ distinct sellers. **16,441 / 3,095 = 5.3 months** of 24.
-Most sellers have short tenure, which limits how much history the risk scorecard can use.
+Most sellers have short tenure, which limits how much history the seller risk watchlist can use.
 
 ### Seller late rate (monthly)
 `n_late / nullif(n_late_known, 0)` within a (seller, month) row. NULL when the seller had no

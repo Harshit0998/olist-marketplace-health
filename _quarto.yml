@@ -28,6 +28,8 @@ website:
         text: Metrics
       - href: docs/data_quality_log.md
         text: Data quality
+      - href: docs/business_brief.md
+        text: Brief
     right:
       - icon: github
         href: https://github.com/Harshit0998/olist-marketplace-health

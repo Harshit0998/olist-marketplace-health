@@ -28,16 +28,25 @@ A test encodes a rule that must **always** hold. A known, accepted gap is a docu
 finding, not a failing test — a pipeline that is permanently red is a pipeline everyone
 stops reading.
 
-**Enforced** — 82 tests in total: 24 on the raw sources, 27 on the staging
-models, 31 on the marts (including the composite-grain tests on
-`fct_seller_monthly` and `fct_cohort_retention`):
+**Enforced** — 123 tests in total: 24 on the raw sources, 27 on the staging models,
+70 on the marts (including the composite-grain tests on `fct_seller_monthly`,
+`fct_cohort_retention`, `fct_seller_snapshots` and `fct_seller_watchlist`), and 2
+singular tests that generic ones cannot express:
 
 - `unique` + `not_null` on every primary key
 - `relationships` on every foreign key (`order_items` → orders, products, sellers;
   `order_payments` → orders)
 - `accepted_values` on `review_score`, restricted to 1–5
+- `accepted_range` on every rate and score, so a ratio can never leave 0–1 and a
+  review can never leave 1–5
 - `unique` on `stg_order_reviews.order_id`, which is the proof that the deduplication
   in #2 worked
+- `assert_no_future_in_observation` — no feature in the risk panel is built from data
+  that post-dates its snapshot. **Verified by deliberately breaking the model and
+  confirming it returns 2,784 rows**; a test never seen to fail is not yet a test.
+- `assert_watchlist_flag_rate_stable` — the watchlist's size must not drift with market
+  conditions. The absolute rule it replaced flagged 2.5% of sellers in Aug 2017 and
+  39.8% in Mar 2018, and would fail this on sight.
 
 **Not enforced, documented instead** — #2 (`review_id` uniqueness), #4 (missing
 delivery dates), #5 (payment mismatch), #7 (missing categories). Each is written into
@@ -47,7 +56,8 @@ project finds it without rerunning the profiling script.
 ## How to reproduce
 
 ```
-python scripts/02_profile.py          # regenerates docs/data_profile.md and the 11 checks
+python scripts/02_profile.py   # regenerates docs/data_profile.md and the 11 checks
 cd olist_dbt
-dbt build --profiles-dir .            # builds 14 models, runs 82 tests
+dbt deps
+dbt build                      # builds 19 models + 1 seed, runs 123 tests
 ```

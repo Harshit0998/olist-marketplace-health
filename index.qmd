@@ -57,6 +57,12 @@ The rule that looked better in training is the one that failed.
 
 ![Page two of the Power BI dashboard: late rate by state, the dose-response staircase, on-time versus late review scores by region, and a category scatter.](docs/img/dashboard-p2-delivery-and-reviews.png){fig-alt="Power BI dashboard page showing delivery and review analysis"}
 
+![Page one — marketplace health: GMV, orders, new versus returning customers, late rate
+by month.](docs/img/dashboard-p1-marketplace-health.png){fig-alt="Power BI dashboard page one"}
+
+![Page three — sellers: a league table, late rate against review score, and the fifteen
+largest sellers by GMV.](docs/img/dashboard-p3-sellers.png){fig-alt="Power BI dashboard page three"}
+
 Three pages in Power BI, built on the tested marts rather than re-deriving metrics in
 DAX — which caught four errors in the written analysis along the way.
 

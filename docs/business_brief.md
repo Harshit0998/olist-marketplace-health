@@ -1,5 +1,9 @@
 # Business brief — Olist Marketplace Health & Seller Risk
 
+> **Written 22 September 2026, before any analysis.** Left as it was so the plan can be
+> compared with what the evidence actually supported. Four items changed; see
+> [What changed, and why](#what-changed-and-why) at the end.
+
 ## Context
 Olist is a Brazilian marketplace that lets small merchants sell through large online stores, handling
 listings, payments and logistics for them. This analysis uses ~99k orders placed between Sep 2016 and
@@ -47,3 +51,36 @@ categories) are recorded in [`data_quality_log.md`](data_quality_log.md).
 - Power BI dashboard (3 pages)
 - One-page decision memo
 - Live Streamlit app
+
+---
+
+## What changed, and why
+
+Scope that survives contact with the data unchanged usually means the data was never
+consulted. Four things moved.
+
+**"Translated into R$ of lost revenue" → not quantified, deliberately.** The plan assumed
+late delivery costs money through lost repeat purchase. It does not, in any amount worth
+reporting: 97% of customers never return, so there is almost no retention to lose, and
+the difference that exists (3.13% on time vs 2.54% late) is worth a few hundred orders
+across the whole dataset. Putting a rupee figure on it would have meant inventing a
+lifetime-value assumption to carry the whole result. The cost is reported in the unit it
+was actually measured in — roughly 3,450 excess one- and two-star reviews.
+
+**"Seller risk scorecard" → a watchlist.** A scorecard was built as far as the panel,
+the leakage test and the Weight-of-Evidence screening, then abandoned for a ranked
+threshold rule. The reason is in [findings §7](findings.md): an absolute cut scored a
+lift of 2.11 in training and 1.12 out of time, because the marketplace late rate tripled
+and the rule had learned a fact about 2017 rather than about sellers. A rule that
+re-reads the market every month held at 1.51. One feature, no points, no probability —
+and it survived the holdout, which the more sophisticated thing did not.
+
+**"Customer segments" → not done, and the reason is in
+[findings §2.2](findings.md).** RFM segmentation needs a frequency dimension. With 3.1%
+of customers ordering more than once, frequency is 1 for almost everyone, and the
+segments would have been an elaborate restatement of recency.
+
+**"Live Streamlit app" and "one-page decision memo" → replaced by a published report.**
+The [report site](https://harshit0998.github.io/olist-marketplace-health/) and the Power
+BI dashboard cover what both were for, and the project is reproducible from a committed
+sample instead — which an app would not have made it.

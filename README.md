@@ -77,6 +77,13 @@ Two tests are worth a look because generic ones could not express them:
 Every figure is regenerated from the models by [`scripts/05_charts.py`](scripts/05_charts.py),
 so a chart cannot quietly disagree with the data behind it.
 
+## The data model
+
+![Entity relationship diagram](docs/er_diagram.png)
+
+Nine source tables. The grain decisions that follow from it — one row per order, per
+person, per seller-month — are written up in [`docs/metrics.md`](docs/metrics.md).
+
 ## Reproduce
 
 **From the committed sample** — needs nothing but this repository (3.5 MB, ten sellers;
