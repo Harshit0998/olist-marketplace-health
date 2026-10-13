@@ -6,6 +6,7 @@ project:
   render:
     - index.qmd
     - docs/findings.md
+    - docs/experiment_design.md
     - docs/metrics.md
     - docs/data_quality_log.md
     - docs/data_profile.md
@@ -21,6 +22,8 @@ website:
         text: Overview
       - href: docs/findings.md
         text: Findings
+      - href: docs/experiment_design.md
+        text: Experiment
       - href: docs/metrics.md
         text: Metrics
       - href: docs/data_quality_log.md

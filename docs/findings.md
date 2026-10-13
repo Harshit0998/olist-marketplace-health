@@ -450,6 +450,12 @@ Establishing causation requires an experiment. That design is section 4 of the p
 
 ---
 
+## Related
+
+- [Experiment design](experiment_design.md) — the A/B test that would
+  settle whether a proactive warning recovers part of the review gap, and why the
+  obvious seller-level design is underpowered.
+
 ## Still to do
 
 - Weight-as-confounder test, on on-time orders only
