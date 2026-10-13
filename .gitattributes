@@ -13,3 +13,10 @@
 *.ipynb    text eol=lf
 *.sql      text eol=lf
 *.yml      text eol=lf
+
+# Language statistics. One exploratory notebook is 4,646 lines against 951 of
+# SQL and 1,121 of Python, so GitHub reported this as a 92% Jupyter Notebook
+# repository. Marking it as documentation excludes it from the language bar
+# without hiding the file.
+*.ipynb         linguist-documentation
+data/sample/**  linguist-generated
